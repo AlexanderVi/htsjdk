@@ -34,6 +34,7 @@ import java.io.File;
  */
 public class SAMTools {
     private String mCommand = null;
+    private String mPasswd = null;
     private File mInputFile = null;
 
 
@@ -73,7 +74,7 @@ public class SAMTools {
             usage();
             return true;
         } else if (command.equals("view")) {
-            if (argcount != 1) {
+            if (argcount > 2) {
                 usage();
                 return false;
             }
@@ -81,7 +82,8 @@ public class SAMTools {
             if (!mInputFile.exists()) {
                 System.out.println("Input file not found: " + mInputFile);
                 return false;
-            }
+            }            
+            if(argcount>1) mPasswd = args[2];
         } else {
             System.out.println("Unrecognized command: " + command);
             System.out.println();
@@ -106,14 +108,27 @@ public class SAMTools {
         return 1;
     }
 
-    private int runView() {
-        final SamReader reader = SamReaderFactory.makeDefault().open(mInputFile);
-        final CloseableIterator<SAMRecord> iterator = reader.iterator();
-        while (iterator.hasNext()) {
-            final SAMRecord record = iterator.next();
-            System.out.println(record.getSAMString());
+    private int runView() 
+    {        
+        try 
+        {
+            final SamReader reader
+                    = (mPasswd != null)
+                            ? SamReaderFactory.makeDefault().open(mInputFile, mPasswd.toCharArray())
+                            : SamReaderFactory.makeDefault().open(mInputFile);
+
+            final CloseableIterator<SAMRecord> iterator = reader.iterator();
+            while (iterator.hasNext()) {
+                final SAMRecord record = iterator.next();
+                System.out.println(record.getSAMString());
+            }
+            iterator.close();
+            return 0;
         }
-        iterator.close();
-        return 0;
+        catch(java.io.FileNotFoundException e)
+        {
+            System.out.println("Input file not found: " + mInputFile);
+            return 1;
+        }            
     }
 }

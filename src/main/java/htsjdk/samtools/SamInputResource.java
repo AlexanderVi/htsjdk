@@ -91,6 +91,12 @@ public class SamInputResource {
 
     /** Creates a {@link SamInputResource} reading from the provided resource, with no index. */
     public static SamInputResource of(final File file) { return new SamInputResource(new FileInputResource(file)); }
+    
+    /** Creates a {@link SamInputResource} reading from the provided resource, with no index. */
+    public static SamInputResource of(final File file, final char[] password) throws FileNotFoundException
+    { 
+         return SamInputResource.of( new EgaSeekableCipherStream(new SeekableFileStream(file), password) );        
+    }
 
     /** Creates a {@link SamInputResource} reading from the provided resource, with no index. */
     public static SamInputResource of(final Path path) {

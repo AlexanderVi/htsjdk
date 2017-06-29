@@ -32,6 +32,7 @@ import htsjdk.samtools.util.*;
 import htsjdk.samtools.util.zip.InflaterFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.SeekableByteChannel;
@@ -79,6 +80,7 @@ public abstract class SamReaderFactory {
     private static ValidationStringency defaultValidationStringency = ValidationStringency.DEFAULT_STRINGENCY;
 
     abstract public SamReader open(final File file);
+    abstract public SamReader open(final File file, final char[] password)throws FileNotFoundException;
 
     /**
      * Open the specified path (without using any wrappers).
@@ -201,7 +203,14 @@ public abstract class SamReaderFactory {
             if (indexMaybe != null) r.index(indexMaybe);
             return open(r);
         }
-
+        
+       @Override
+       public SamReader open(final File file, final char[] password) throws FileNotFoundException{
+            final SamInputResource r = SamInputResource.of(file, password);
+            final File indexMaybe = SamFiles.findIndex(file);
+            if (indexMaybe != null) r.index(indexMaybe);
+            return open(r);
+       }
 
         @Override
         public ValidationStringency validationStringency() {
